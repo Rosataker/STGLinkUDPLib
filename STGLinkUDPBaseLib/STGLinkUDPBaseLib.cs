@@ -428,17 +428,10 @@ namespace STGLinkUDP.STGLinkUDPBase
             //14.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0
             #endregion
 
-
-            for (int i = 0; i < DataByte.Length; i++)
-            {
-                Console.WriteLine("{0}->{1}", i, DataByte[i]);
-            }
-
-            Console.Read();
             try
             {
 
-                if (DataByte[19] == 1)
+                if (DataByte[17] == 1 || DataByte[18] == 1)
                 {
                     Byte[] sendBytes = new byte[] {
                      1,1
@@ -571,6 +564,26 @@ namespace STGLinkUDP.STGLinkUDPBase
         void Destructor();
     }
 
-
+//    IScanCmdPacketInterface,IMachIDCmdPacketInterface,IMachConnectCmdPacketInterface,IMachDataCmdPacketInterface
+    interface IScanCmdPacketInterface
+    {
+        void Monitor(out byte[] ResultByte);
+        void Log(byte[] sendBytes, string status);
+    }
+    interface IMachIDCmdPacketInterface
+    {
+        void Monitor(byte[] DataByte, out byte[] ResultByte);
+        void Log(byte[] sendBytes, string status);
+    }
+    interface IMachConnectCmdPacketInterface
+    {
+        void Monitor(byte[] DataByte, out byte[] ResultByte);
+        void Log(byte[] sendBytes, string status);
+    }
+    interface IMachDataCmdPacketInterface
+    {
+        void Monitor(byte[] DataByte, out byte[] ResultByte);
+        void Log(byte[] sendBytes, string status);
+    }
 
 }

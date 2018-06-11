@@ -19,7 +19,7 @@ namespace ConsoleApp
 
             STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib();
             
-            //STGLinkUDPLib.RunClient(_IP, _PORT);
+            STGLinkUDPLib.RunClient(_IP, _PORT);
             
 
             //foreach (string key in ConfigurationManager.AppSettings)

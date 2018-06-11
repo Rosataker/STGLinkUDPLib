@@ -250,8 +250,7 @@ namespace UDPConsoleServer
                 byte[] buffer = _UC.Receive(ref _IPEP);
                 Console.WriteLine("MachDataEchoPacketServer 接收");
 
-                if (buffer[4] == 0x22)
-                {
+
                     #region Debug
                     //Console.WriteLine("接收 MachDataEchoPacketServer : ");
                     //foreach (byte buf in buffer)
@@ -272,7 +271,7 @@ namespace UDPConsoleServer
 
                     _UC.Send(sendBytes, sendBytes.Length, _IPEP);
                     _Close = true;
-                }
+                
             }
         }
     }
