@@ -12,15 +12,16 @@ namespace ConsoleApp
     {
         private static string _IP = ConfigurationManager.AppSettings["_IP"];
         private static int _PORT = Int32.Parse(ConfigurationManager.AppSettings["_PORT"], System.Globalization.NumberStyles.HexNumber);
+        //private static int _PORT = Convert.ToInt32(ConfigurationManager.AppSettings["_PORT"]);
 
-         
         static void Main(string[] args)
         {
 
             STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib();
-            
+
             STGLinkUDPLib.RunClient(_IP, _PORT);
-            
+            //STGLinkUDPLib.RunClient(_IP, 5555);
+
 
             //foreach (string key in ConfigurationManager.AppSettings)
             //{

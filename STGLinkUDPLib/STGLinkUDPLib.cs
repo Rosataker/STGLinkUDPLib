@@ -20,6 +20,7 @@ namespace STGLinkUDP
             {
                 Open(IP, Port);
                 LogHeadCreate(IP, Port);
+               
                 ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
 
                 //2            

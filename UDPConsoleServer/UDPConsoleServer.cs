@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace UDPConsoleServer
 {
@@ -20,7 +19,7 @@ namespace UDPConsoleServer
             string MachIDCmdPacketSendBytes = string.Empty;
 
 
-            _IPEP = new IPEndPoint(IPAddress.Any, 0x869C);
+            _IPEP = new IPEndPoint(IPAddress.Any, 0x869C);           
             _UC = new UdpClient(_IPEP.Port);
             do
             {
@@ -28,8 +27,6 @@ namespace UDPConsoleServer
                 MachIDCmdPacketServer();
                 MachConnectCmdPacketServer();
                 MachDataEchoPacketServer();
-                //Thread.Sleep(1)
-
 
             } while (true);
 
@@ -275,4 +272,5 @@ namespace UDPConsoleServer
             }
         }
     }
+   
 }
