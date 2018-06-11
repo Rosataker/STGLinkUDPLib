@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using STGLinkUDP.STGLinkUDPBase;
+
 
 
 namespace STGLinkUDP
@@ -10,19 +12,30 @@ namespace STGLinkUDP
     public class STGLinkUDPLib : STGLinkUDPBaseLib
     {
         private static string _FILENAME = "STGLinkUDPLib Log.txt";
+
+
         public void RunClient(string IP, int Port)
         {
-            Open(IP, Port);
-            LogHeadCreate(IP, Port);
-            ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
+            do
+            {
+                Open(IP, Port);
+                LogHeadCreate(IP, Port);
+                ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
 
-            var MachIDCmdPacketDataByte = ScanCmdPacketResultByte;
-            if(Connected) MachIDCmdPacket(MachIDCmdPacketDataByte, out byte[] MachIDCmdPacketResultByte);
+                //2            
+                MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
 
+                //3
+                MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
 
+                //4
+                MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
 
+                Destructor();
 
-            Destructor();
+                Thread.Sleep(5000);
+            } while (true);
+
         }
 
 
