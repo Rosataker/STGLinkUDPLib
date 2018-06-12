@@ -12,12 +12,16 @@ namespace ConsoleApp
     {
         private static string _IP = ConfigurationManager.AppSettings["_IP"];
         private static int _PORT = Int32.Parse(ConfigurationManager.AppSettings["_PORT"], System.Globalization.NumberStyles.HexNumber);
-        //private static int _PORT = Convert.ToInt32(ConfigurationManager.AppSettings["_PORT"]);
+        private static int _Code = Int32.Parse(ConfigurationManager.AppSettings["_Code"], System.Globalization.NumberStyles.HexNumber);
+        private static int _Cmd = Int32.Parse(ConfigurationManager.AppSettings["_Cmd"], System.Globalization.NumberStyles.HexNumber);
+
 
         static void Main(string[] args)
         {
-
             STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib();
+
+            STGLinkUDPBaseLib._Code = _Code;
+            STGLinkUDPBaseLib._Cmd = _Cmd;
 
             STGLinkUDPLib.RunClient(_IP, _PORT);
             //STGLinkUDPLib.RunClient(_IP, 5555);
@@ -29,8 +33,7 @@ namespace ConsoleApp
             //    Console.WriteLine("Key: {0}, Value: {1}", key, value);
             //}
 
-            //Console.WriteLine("_Code->{0}", Convert.ToInt32(ConfigurationManager.AppSettings["_Code"], 16));
-            //Console.WriteLine("_Cmd->{0}", Convert.ToInt32(ConfigurationManager.AppSettings["_Cmd"], 16));
+
 
             Console.Read();
         }

@@ -13,6 +13,8 @@ namespace STGLinkUDP.STGLinkUDPBase
     {
         public UdpClient UC;
         public IPEndPoint IPEP;
+        public static int _Code;
+        public static int _Cmd;
         private static STGLinkUDPBaseLib ISTGLinkUDPBaseLib = new STGLinkUDPBaseLib();
         IScanCmdPacketInterface IScanCmdPacketInterface = ISTGLinkUDPBaseLib;
         IMachIDCmdPacketInterface IMachIDCmdPacketInterface = ISTGLinkUDPBaseLib;
