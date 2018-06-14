@@ -39,9 +39,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\STGLinkUDPBaseLib\STGLinkUDPBaseLib.csproj">
+    <ProjectReference Include="..\STGLinkUDPBaseLib\STUDPBaseLib.csproj">
       <Project>{295682d9-3fd2-4063-903f-6c3f8295458b}</Project>
-      <Name>STGLinkUDPBaseLib</Name>
+      <Name>STUDPBaseLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\STGLinkUDPBaseLib\STUDPBaseLib.csproj">
+      <Project>{295682d9-3fd2-4063-903f-6c3f8295458b}</Project>
+      <Name>STUDPBaseLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

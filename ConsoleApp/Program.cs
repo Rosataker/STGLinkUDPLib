@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Configuration;
 using STGLinkUDP;
-using STGLinkUDP.STGLinkUDPBase;
+using STGLinkUDP.STUDPBase;
 using System.IO;
 
 namespace ConsoleApp
@@ -20,8 +20,8 @@ namespace ConsoleApp
         {
             STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib();
 
-            STGLinkUDPBaseLib._Code = _Code;
-            STGLinkUDPBaseLib._Cmd = _Cmd;
+            STUDPBaseLib._Code = _Code;
+            STUDPBaseLib._Cmd = _Cmd;
 
             STGLinkUDPLib.RunClient(_IP, _PORT);
             //STGLinkUDPLib.RunClient(_IP, 5555);

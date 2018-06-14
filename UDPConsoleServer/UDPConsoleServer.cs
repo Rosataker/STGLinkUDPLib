@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-
+using STGLinkUDP.STUDPBase;
 
 namespace UDPConsoleServer
 {
@@ -14,7 +14,9 @@ namespace UDPConsoleServer
         public static UdpClient _UC;
         static void Main(string[] args)
         {
+            STUDPBaseLib.PacketSeting();
             Console.WriteLine("這是伺服器...\n");
+
 
             string MachIDCmdPacketSendBytes = string.Empty;
 
@@ -41,6 +43,8 @@ namespace UDPConsoleServer
             //4.Count < 2 > 自定
             //5.Sum < 1 > CheckSum 之數值，此封包數值總合為 = 0;
             #endregion
+            
+
             Byte[] sendBytes = new byte[] {
                      0,0
                     ,0,0

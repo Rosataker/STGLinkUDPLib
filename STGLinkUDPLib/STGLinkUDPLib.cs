@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using STGLinkUDP.STGLinkUDPBase;
+using STGLinkUDP.STUDPBase;
 
 
 
 namespace STGLinkUDP
 {
-    public class STGLinkUDPLib : STGLinkUDPBaseLib
+    public class STGLinkUDPLib : STUDPBaseLib
     {
         private static string _FILENAME = "STGLinkUDPLib Log.txt";
 
@@ -23,14 +23,14 @@ namespace STGLinkUDP
                
                 ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
 
-                //2            
-                MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
+                ////2            
+                //MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
 
-                //3
-                MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
+                ////3
+                //MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
 
-                //4
-                MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
+                ////4
+                //MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
 
                 Destructor();
 
