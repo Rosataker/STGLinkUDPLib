@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using STGLinkUDP.STUDPBase;
-
+using STUPBaseStruct;
 
 
 namespace STGLinkUDP
@@ -22,6 +22,15 @@ namespace STGLinkUDP
                 LogHeadCreate(IP, Port);
                
                 ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
+                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
+                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(ScanCmdPacketResultByte , ScanEchoPacket.GetType());
+
+                Console.WriteLine("ScanEchoPacket.ID->{0}",ScanEchoPacket.ID);
+                Console.WriteLine("ScanEchoPacket.Sz->{0}",ScanEchoPacket.Sz);
+                Console.WriteLine("ScanEchoPacket.Cmd->{0}",ScanEchoPacket.Cmd);
+                Console.WriteLine("ScanEchoPacket.Count->{0}",ScanEchoPacket.Count);
+                Console.WriteLine("ScanEchoPacket.Sum->{0}",ScanEchoPacket.Sum);
+
 
                 ////2            
                 //MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);

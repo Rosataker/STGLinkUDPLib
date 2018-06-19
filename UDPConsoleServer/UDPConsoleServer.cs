@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using STUPBaseStruct;
 using STGLinkUDP.STUDPBase;
 
 namespace UDPConsoleServer
@@ -12,6 +13,12 @@ namespace UDPConsoleServer
     {
         public static IPEndPoint _IPEP;
         public static UdpClient _UC;
+        public static ScanEchoPacketStruct ScanEchoPack;
+        //public static MachIDCmdPacketStruct MachIDCmdPack;
+        //public static MachConnectCmdPacketStruct MachConnectCmdPack;
+        //public static MachDataCmdPacketStruct MachDataCmdPack;
+
+
         static void Main(string[] args)
         {
             STUDPBaseLib.PacketSeting();
@@ -21,7 +28,7 @@ namespace UDPConsoleServer
             string MachIDCmdPacketSendBytes = string.Empty;
 
 
-            _IPEP = new IPEndPoint(IPAddress.Any, 0x869C);           
+            _IPEP = new IPEndPoint(IPAddress.Any, 0x869C);
             _UC = new UdpClient(_IPEP.Port);
             do
             {
@@ -43,21 +50,27 @@ namespace UDPConsoleServer
             //4.Count < 2 > 自定
             //5.Sum < 1 > CheckSum 之數值，此封包數值總合為 = 0;
             #endregion
-            
-
-            Byte[] sendBytes = new byte[] {
-                     0,0
-                    ,0,0
-                    ,0x30
-                    ,0,4
-                    ,0
-                    };
+            PacketSeting();
+            byte[] sendBytes = StructChangeClass.StructToBytes(ScanEchoPack);
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
+
+
+
                 Console.WriteLine("ScanCmdPacketServer 接收");
+                //foreach (byte item in buffer)
+                //{
+                //    Console.WriteLine("item->{0}", item);
+                //}
+                //Console.WriteLine("sendBytes.Length->{0}", buffer.Length);
+
+
+
+
+
                 if (buffer[4] == 0x20)
                 {
                     #region Debug
@@ -133,8 +146,8 @@ namespace UDPConsoleServer
 
             byte[] sendBytes = new byte[] { };
             MachIDCmdPacketBytesSet(out sendBytes);
-            
-            
+
+
             bool _Close = false;
             while (!_Close)
             {
@@ -181,7 +194,7 @@ namespace UDPConsoleServer
                 ,1,1
                 ,1,1
                 ,0
-            };       
+            };
         }
         private static void MachConnectCmdPacketServer()
         {
@@ -226,14 +239,14 @@ namespace UDPConsoleServer
             sendBytes = new Byte[] {
                0
                ,1
-               ,255,255
+               ,0x30, 0x00
                ,0x01
                ,0,0
-               ,255,255
+               ,0x32,0x08
                ,0x50
                ,0
                ,0,0,0,0
-               ,1,8,2,0
+               ,0x71,0x0c,0,0
                ,0,0,0,0
             };
             Array.Resize(ref sendBytes, sendBytes.Length + 801);
@@ -252,29 +265,62 @@ namespace UDPConsoleServer
                 Console.WriteLine("MachDataEchoPacketServer 接收");
 
 
-                    #region Debug
-                    //Console.WriteLine("接收 MachDataEchoPacketServer : ");
-                    //foreach (byte buf in buffer)
-                    //{
-                    //    Console.WriteLine("buf->{0}", buf);
-                    //}
+                #region Debug
+                //Console.WriteLine("接收 MachDataEchoPacketServer : ");
+                //foreach (byte buf in buffer)
+                //{
+                //    Console.WriteLine("buf->{0}", buf);
+                //}
 
 
-                    //Console.WriteLine("回傳 MachDataEchoPacketServer : ");
+                //Console.WriteLine("回傳 MachDataEchoPacketServer : ");
 
 
-                    //foreach (byte buf in sendBytes)
-                    //{
-                    //    Console.WriteLine("buf->{0}", buf);
-                    //}
-                    #endregion
-                    Console.WriteLine("MachDataEchoPacketServer 回傳");
+                //foreach (byte buf in sendBytes)
+                //{
+                //    Console.WriteLine("buf->{0}", buf);
+                //}
+                #endregion
+                Console.WriteLine("MachDataEchoPacketServer 回傳");
 
-                    _UC.Send(sendBytes, sendBytes.Length, _IPEP);
-                    _Close = true;
-                
+                _UC.Send(sendBytes, sendBytes.Length, _IPEP);
+                _Close = true;
+
             }
         }
+
+
+
+        public static void PacketSeting()
+        {
+            #region ScanEchoPack
+            ScanEchoPack.ID = 0x0;
+            ScanEchoPack.Sz = 0x0;
+            ScanEchoPack.Cmd = 0x30;
+            ScanEchoPack.Count = 0x00;
+            ScanEchoPack.Sum = 0x00;
+            #endregion
+
+
+            //            封包名稱 Byte 數 數值 備註
+            //1.ID < 2 > 0
+            //2.Sz < 2 > 0x43 封包長度[< ID0 > +< Ver1 > +…+< UserDef >]
+            //3.Cmd < 1 > 0x33 回應連線要求,表示同意連線要求。
+            //4.Count < 2 > 自定
+            //5.ID0 < 1 > 0
+            //6.Ver1 < 1 > 4
+            //7.Ver2 < 1 > 1
+            //8.BugFix < 2 > 1
+            //9.TypeID < 1 > 線切割機為 0x02，深孔機為 0x04
+            //10.SubTypeID < 1 >
+            //11.UserDef < 60 > 機台名稱
+            //12.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0;
+
+            #region MachIDCmdPack
+
+            #endregion
+
+        }
     }
-   
+
 }

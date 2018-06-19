@@ -8,8 +8,7 @@ using System.Threading;
 using ISTUDP;
 using System.Runtime.InteropServices;
 using STUPBaseStruct;
-
-
+using System.Globalization;
 
 namespace STGLinkUDP.STUDPBase
 {
@@ -55,19 +54,9 @@ namespace STGLinkUDP.STUDPBase
             #endregion
 
             string history = "ScanCmdPacket " + status + " content:  \r\n";
-            string[] TitleAry = new string[] { };
-
-            TitleAry = new string[] {
-            "ID","ID"
-            ,"Sz","Sz"
-            ,"Cmd"
-            ,"Count","Count"
-            ,"Sum"
-            };
-
-            for (int i = 0; i < sendBytes.Length; i++)
+            foreach (byte item in sendBytes)
             {
-                history += TitleAry[i] + "->" + sendBytes[i] + "\r\n";
+                history += item + "\r\n";
             }
 
             LogLoopCreate(history);
@@ -78,15 +67,16 @@ namespace STGLinkUDP.STUDPBase
             try
             {
                 PacketSeting();
+                byte[] sendBytes = StructChangeClass.StructToBytes(ScanCmdPack);
 
 
-                byte[] sendBytes = StructChangeByte.ScanCmdPacket(ScanCmdPack);
-
-                UC.Send(sendBytes, sendBytes.Length, IPEP);
+                UC.Send(sendBytes, sendBytes.Length, IPEP);               
                 IScanCmdPacketInterface.Log(sendBytes, "Send");
 
                 ResultByte = UC.Receive(ref IPEP);
                 IScanCmdPacketInterface.Log(ResultByte, "Result");
+
+
             }
             catch (Exception)
             {
@@ -99,7 +89,6 @@ namespace STGLinkUDP.STUDPBase
 
             }
         }
-
 
         void IMachIDCmdPacketInterface.Log(byte[] sendBytes, string status)
         {
@@ -200,28 +189,18 @@ namespace STGLinkUDP.STUDPBase
         public void MachIDCmdPacket(byte[] DataByte, out byte[] ResultByte)
         {
 
-            #region MachIDCmdPacket
-            //1.ID < 2 > 0
-            //2.Sz < 2 > 0
-            //3.Cmd < 1 > 0x21
-            //4.Count < 2 > 自定
-            //5.Sum < 1 > CheckSum 之數值，此封包數值總合為 = 0;
-            #endregion
-
             ResultByte = new byte[] { };
-
             try
             {
+                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
+                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, ScanEchoPacket.GetType());
 
-                if (DataByte[4] == 0x30)
+                if (ScanEchoPacket.Cmd == 0x30)
                 {
-                    Byte[] sendBytes = new byte[] {
-                     0,0
-                    ,0,0
-                    ,0x21
-                    ,0,0
-                    ,0
-                    };
+                    PacketSeting();
+                    byte[] sendBytes = StructChangeClass.StructToBytes(MachIDCmdPack);
+
+
                     UC.Send(sendBytes, sendBytes.Length, IPEP);
                     IMachIDCmdPacketInterface.Log(sendBytes, "Send");
 
@@ -360,30 +339,10 @@ namespace STGLinkUDP.STUDPBase
 
             try
             {
-
                 if (DataByte[4] == 0x33)
                 {
-                    Byte[] sendBytes = new byte[] {
-                     1,1
-                    ,0x4A,0x4A
-                    ,0x22
-                    ,0,0
-                    ,0x42,0x42
-                    ,0x03
-                    ,0
-                    ,0,0,0,0
-                    ,4
-                    ,3
-                    ,7,7
-                    ,0x10
-                    };
-                    Array.Resize(ref sendBytes, sendBytes.Length + 61);
-
-                    for (int i = 20; i < sendBytes.Length - 1; i++)
-                    {
-                        sendBytes[i] = 0x30;
-                    }
-                    sendBytes[sendBytes.Length - 1] = 0;
+                    PacketSeting();
+                    byte[] sendBytes = StructChangeByte.MachConnectCmdPack(MachConnectCmdPack);
 
 
 
@@ -474,51 +433,14 @@ namespace STGLinkUDP.STUDPBase
         public void MachDataCmdPacket(byte[] DataByte, out byte[] ResultByte)
         {
             ResultByte = new byte[] { };
-            #region MachDataCmdPacket
-            //1.ID < 2 > 1 非零辨識碼
-            //2.Sz < 2 > 0x4A 封包長度
-            //3.Cmd < 1 > 0x22 連線要求。
-            //4.Count < 2 > 自定
-            //5.DataSz0 < 2 > 0x42 封包長度[< Ver1 > +< Ver2 > +…+< Password >]
-            //6.DataCmd0 < 1 > 0x03
-            //7.DataCmd1 < 1 > 0
-            //8.Part < 4 > 0
-            //9.Ver1 < 1 > 4
-            //10.Ver2 < 1 > 3
-            //11.BugFix < 2 > 7
-            //12.TypeID < 1 > 0x10 Win32
-            //13.Password < 60 > “0000” 密碼字串“0000”
-            //14.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0
-            #endregion
+
 
             try
             {
-
                 if (DataByte[17] == 1 || DataByte[18] == 1)
                 {
-                    Byte[] sendBytes = new byte[] {
-                     1,1
-                    ,0x4A,0x4A
-                    ,0x22
-                    ,0,0
-                    ,0x42,0x42
-                    ,0x03
-                    ,0
-                    ,0,0,0,0
-                    ,4
-                    ,3
-                    ,7,7
-                    ,0x10
-                    };
-                    Array.Resize(ref sendBytes, sendBytes.Length + 61);
-
-                    for (int i = 20; i < sendBytes.Length - 1; i++)
-                    {
-                        sendBytes[i] = 0x30;
-                    }
-                    sendBytes[sendBytes.Length - 1] = 0;
-
-
+                    PacketSeting();
+                    byte[] sendBytes = StructChangeByte.MachDataCmdPack(MachDataCmdPack);
 
 
                     UC.Send(sendBytes, sendBytes.Length, IPEP);
@@ -551,89 +473,117 @@ namespace STGLinkUDP.STUDPBase
             UC.Close();
         }
 
+
+        /// <summary>
+        ///     設定
+        /// </summary>
         public static void PacketSeting()
         {
             #region ScanCmdPack
-            ScanCmdPack.ID = new byte[] { 0, 0 };
-            ScanCmdPack.Sz = new byte[] { 0, 0 };
-            ScanCmdPack.Cmd = new byte[] { 0x20 };
-            ScanCmdPack.Count = new byte[] { 0, 0 };
-            ScanCmdPack.Sum = new byte[] { 0 };
+            ScanCmdPack.ID = 0x0;
+            ScanCmdPack.Sz = 0x0;
+            ScanCmdPack.Cmd = 0x20;
+            ScanCmdPack.Count = 0x0;
+            ScanCmdPack.Sum = 0x0;
             #endregion
 
 
             #region MachIDCmdPack
-            MachIDCmdPack.ID = new byte[] { 0, 0 };
-            MachIDCmdPack.Sz = new byte[] { 0, 0 };
-            MachIDCmdPack.Cmd = new byte[] { 0x21 };
-            MachIDCmdPack.Count = new byte[] { 0, 0 };
-            MachIDCmdPack.Sum = new byte[] { 0 };
+            MachIDCmdPack.ID = 0x0;
+            MachIDCmdPack.Sz = 0x0;
+            MachIDCmdPack.Cmd = 0x21;
+            MachIDCmdPack.Count = 0x0;
+            MachIDCmdPack.Sum = 0x0;
             #endregion
 
 
             #region MachConnectCmdPack
             MachConnectCmdPack.ID = new byte[] { 1, 1 };
-            MachConnectCmdPack.Sz = new byte[] { 0x4A, 0x4A };
+            MachConnectCmdPack.Sz = new byte[] { 0x4A, 0 };
             MachConnectCmdPack.Cmd = new byte[] { 0x22 };
             MachConnectCmdPack.Count = new byte[] { 0, 0 };
-            MachConnectCmdPack.DataSz0 = new byte[] { 0x42, 0x42 };
+            MachConnectCmdPack.DataSz0 = new byte[] { 0x42, 0 };
             MachConnectCmdPack.DataCmd0 = new byte[] { 0x03 };
             MachConnectCmdPack.DataCmd1 = new byte[] { 0 };
             MachConnectCmdPack.Part = new byte[] { 0, 0, 0, 0 };
             MachConnectCmdPack.Ver1 = new byte[] { 4 };
             MachConnectCmdPack.Ver2 = new byte[] { 3 };
-            MachConnectCmdPack.BugFix = new byte[] { 7, 7 };
+            MachConnectCmdPack.BugFix = new byte[] { 7, 0 };
             MachConnectCmdPack.TypeID = new byte[] { 0x10 };
             MachConnectCmdPack.Password = new byte[] { 0x30, 0x30, 0x30, 0x30 };
             Array.Resize(ref MachConnectCmdPack.Password, MachConnectCmdPack.Password.Length + 56);
             MachConnectCmdPack.Sum = new byte[] { 0 };
             #endregion
 
-//            1.ID0 < 1 > 3.b - 10 需與機台回應的 3.b - 10 數值相同
-//2.ID1 < 1 > 自定
-//3.Cmd < 1 > 0x01
-//4.Count < 2 > 自定
-//5.DataSz0 < 2 > 0x328 封包長度[< Code > +< Len > +< DataBuf >]
-//6.DataCmd0 < 1 > 0x50
-//7.DataCmd1 < 1 > 0
-//8.Part < 4 > 0
-//9.Code < 4 > 深孔請用 0x7A1
-//10.Len < 4 > 0x320
-//11.DataBuf < 800 >
-//12.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0
             #region MachDataCmdPack
-            //ScanEchoPack.ID = new byte[] { 0, 0 };
-            //ScanEchoPack.Sz = new byte[] { 0, 0 };
-            //ScanEchoPack.Cmd = new byte[] { 0x30 };
-            //ScanEchoPack.Count = new byte[] { 0, 0 };
-            //ScanEchoPack.Sum = new byte[] { 0 };
+            MachDataCmdPack.ID0 = new byte[] { 1 };
+            MachDataCmdPack.ID1 = new byte[] { 0 };
+            MachDataCmdPack.Cmd = new byte[] { 0x01 };
+            MachDataCmdPack.Count = new byte[] { 0, 0 };
+            MachDataCmdPack.DataSz0 = new byte[] { 0x32, 0x08 };
+            MachDataCmdPack.DataCmd0 = new byte[] { 0x50 };
+            MachDataCmdPack.DataCmd1 = new byte[] { 0 };
+            MachDataCmdPack.Part = new byte[] { 0, 0, 0, 0 };
+            MachDataCmdPack.Code = new byte[] { 0x7A, 0x01, 0, 0 };
+            MachDataCmdPack.Len = new byte[] { 0x32, 0x00 };
+            MachDataCmdPack.DataBuf = new byte[] { };
+            Array.Resize(ref MachDataCmdPack.DataBuf, MachDataCmdPack.DataBuf.Length + 800);
+            MachDataCmdPack.Sum = new byte[] { 0 };
             #endregion
 
 
         }
     }
 
+
+    /// <summary>
+    ///     把STUPBaseStruct的struct轉成可送到UDP的格式
+    /// </summary>
     public class StructChangeByte
     {
-        public static byte[] ScanCmdPacket(ScanCmdPacketStruct ChgStruct)
-        {
-            int nSizeOfPerson = Marshal.SizeOf(ChgStruct);
-            byte[] retByte = new byte[nSizeOfPerson];
+     
 
-            ChgStruct.ID.CopyTo(retByte, 0);
-            ChgStruct.Sz.CopyTo(retByte, 2);
-            ChgStruct.Cmd.CopyTo(retByte, 4);
-            ChgStruct.Count.CopyTo(retByte, 5);
-            ChgStruct.Sum.CopyTo(retByte, 7);
+        public static byte[] MachConnectCmdPack(MachConnectCmdPacketStruct ChgStruct)
+        {
+            List<byte> retByteList = new List<byte>();
+            retByteList.AddRange(ChgStruct.ID);
+            retByteList.AddRange(ChgStruct.Sz);
+            retByteList.AddRange(ChgStruct.Cmd);
+            retByteList.AddRange(ChgStruct.Count);
+            retByteList.AddRange(ChgStruct.DataSz0);
+            retByteList.AddRange(ChgStruct.DataCmd0);
+            retByteList.AddRange(ChgStruct.DataCmd1);
+            retByteList.AddRange(ChgStruct.Part);
+            retByteList.AddRange(ChgStruct.Ver1);
+            retByteList.AddRange(ChgStruct.Ver2);
+            retByteList.AddRange(ChgStruct.BugFix);
+            retByteList.AddRange(ChgStruct.TypeID);
+            retByteList.AddRange(ChgStruct.Password);
+            retByteList.AddRange(ChgStruct.Sum);
+            byte[] retByte = retByteList.ToArray();
+            return retByte;
+        }
+        public static byte[] MachDataCmdPack(MachDataCmdPacketStruct ChgStruct)
+        {
+            List<byte> retByteList = new List<byte>();
+            retByteList.AddRange(ChgStruct.ID0);
+            retByteList.AddRange(ChgStruct.ID1);
+            retByteList.AddRange(ChgStruct.Cmd);
+            retByteList.AddRange(ChgStruct.Count);
+            retByteList.AddRange(ChgStruct.DataSz0);
+            retByteList.AddRange(ChgStruct.DataCmd0);
+            retByteList.AddRange(ChgStruct.DataCmd1);
+            retByteList.AddRange(ChgStruct.Part);
+            retByteList.AddRange(ChgStruct.Code);
+            retByteList.AddRange(ChgStruct.Len);
+            retByteList.AddRange(ChgStruct.DataBuf);
+            retByteList.AddRange(ChgStruct.Sum);
+            byte[] retByte = retByteList.ToArray();
             return retByte;
         }
 
-        public static void ScanEchoPacket()
-        {
 
-        }
+
+ 
     }
-
-
-
 }
