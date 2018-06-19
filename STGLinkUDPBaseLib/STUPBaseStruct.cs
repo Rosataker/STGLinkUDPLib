@@ -45,71 +45,62 @@ namespace STUPBaseStruct
         public short BugFix;
         public byte TypeID;
         public byte SubTypeID;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 60)]
-        public char UserDef;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 60)]
+        public string UserDef;
         public byte Sum;
     }
 
-    
+
     public struct MachConnectCmdPacketStruct
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] ID;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] Sz;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Cmd;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] Count;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] DataSz0;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] DataCmd0;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] DataCmd1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] Part;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Ver1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Ver2;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] BugFix;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] TypeID;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 60)]
-        public byte[] Password;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Sum;
+        public short ID;
+        public short Sz;
+        public byte Cmd;
+        public short Count;
+        public short DataSz0;
+        public byte DataCmd0;
+        public byte DataCmd1;
+        public int Part;
+        public byte Ver1;
+        public byte Ver2;
+        public short BugFix;
+        public byte TypeID;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 60)]
+        public string Password;
+        public byte Sum;
     }
 
+
+    public struct MachConnectEchoPacketStruct
+    {
+        public short ID;
+        public short Sz;
+        public byte Cmd;
+        public short Count;
+        public short DataSz0;
+        public byte DataCmd0;
+        public byte DataCmd1;
+        public int Part;
+        public short Security;
+        public short MachID;
+        public byte Sum;
+    }
+
+
     public struct MachDataCmdPacketStruct
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] ID0;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] ID1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Cmd;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] Count;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] DataSz0;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] DataCmd0;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] DataCmd1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] Part;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] Code;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] Len;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 800)]
-        public byte[] DataBuf;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Sum;
+        public byte ID0;
+        public byte ID1;
+        public byte Cmd;
+        public short Count;
+        public short DataSz0;
+        public byte DataCmd0;
+        public byte DataCmd1;
+        public int Part;
+        public int Code;
+        public int Len;
+        public string DataBuf;
+        public byte Sum;
 
     }
 

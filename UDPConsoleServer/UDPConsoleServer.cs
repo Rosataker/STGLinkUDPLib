@@ -13,10 +13,7 @@ namespace UDPConsoleServer
     {
         public static IPEndPoint _IPEP;
         public static UdpClient _UC;
-        public static ScanEchoPacketStruct ScanEchoPack;
-        //public static MachIDCmdPacketStruct MachIDCmdPack;
-        //public static MachConnectCmdPacketStruct MachConnectCmdPack;
-        //public static MachDataCmdPacketStruct MachDataCmdPack;
+
 
 
         static void Main(string[] args)
@@ -41,6 +38,7 @@ namespace UDPConsoleServer
 
 
         }
+
         private static void ScanCmdPacketServer()
         {
             #region ScanCmdPacketServer
@@ -57,21 +55,11 @@ namespace UDPConsoleServer
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
+                ScanCmdPacketStruct ScanCmdPacket = new ScanCmdPacketStruct();
+                ScanCmdPacket = (ScanCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, ScanCmdPacket.GetType());
 
-
-
-                Console.WriteLine("ScanCmdPacketServer 接收");
-                //foreach (byte item in buffer)
-                //{
-                //    Console.WriteLine("item->{0}", item);
-                //}
-                //Console.WriteLine("sendBytes.Length->{0}", buffer.Length);
-
-
-
-
-
-                if (buffer[4] == 0x20)
+                Console.WriteLine("ScanCmdPacketServer 接收");              
+                if (ScanCmdPacket.Cmd == 0x20)
                 {
                     #region Debug
                     //Console.WriteLine("接收 ScanCmdPacket : ");
@@ -96,37 +84,6 @@ namespace UDPConsoleServer
                 }
             }
         }
-        //設定回傳參數
-        private static void MachIDCmdPacketBytesSet(out Byte[] sendBytes)
-        {
-            sendBytes = new Byte[] {
-                0,0,
-                0,0x43,
-                0x33,
-                0,0,
-                0,
-                4,
-                1,
-                1,1,
-                0x02,
-                0
-            };
-            Array.Resize(ref sendBytes, sendBytes.Length + 61);
-            byte[] MachineName = Encoding.UTF8.GetBytes(" it is MachineName ");
-            int sb = 14;
-            for (int i = 1; i <= 60; i++)
-            {
-                try
-                {
-                    sendBytes[sb + i] = MachineName[i];
-                }
-                catch (Exception)
-                {
-                    sendBytes[sb + i] = 0;
-                }
-            }
-            sendBytes[74] = 0;
-        }
         private static void MachIDCmdPacketServer()
         {
             #region MachIDCmdPacketServer
@@ -144,17 +101,22 @@ namespace UDPConsoleServer
             //12.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0;
             #endregion
 
-            byte[] sendBytes = new byte[] { };
-            MachIDCmdPacketBytesSet(out sendBytes);
+            PacketSeting();
+            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
+
 
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
+                
+                MachIDCmdPacketStruct MachIDCmdPacket = new MachIDCmdPacketStruct();
+                MachIDCmdPacket = (MachIDCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachIDCmdPacket.GetType());
+
                 Console.WriteLine("MachIDCmdPacketServer 接收");
 
-                if (buffer[4] == 0x21)
+                if (MachIDCmdPacket.Cmd == 0x21)
                 {
                     #region Debug
                     //Console.WriteLine("接收 MachIDCmdPacket : ");
@@ -180,35 +142,23 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachConnectCmdPacketBytesSet(out Byte[] sendBytes)
-        {
-            sendBytes = new Byte[] {
-                1,1
-                ,0x0C,0x0C
-                ,0x31
-                ,0,0
-                ,0x04,0x04
-                ,0
-                ,0
-                ,0,0,0,0
-                ,1,1
-                ,1,1
-                ,0
-            };
-        }
         private static void MachConnectCmdPacketServer()
         {
-            byte[] sendBytes = new byte[] { };
-            MachConnectCmdPacketBytesSet(out sendBytes);
+            PacketSeting();
+            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
+
 
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
-                Console.WriteLine("MachConnectCmdPacketServer 接收");
+                MachConnectCmdPacketStruct MachConnectCmdPacket = new MachConnectCmdPacketStruct();
+                MachConnectCmdPacket = (MachConnectCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachConnectCmdPacket.GetType());
 
-                if (buffer[4] == 0x22)
+
+                Console.WriteLine("MachConnectCmdPacketServer 接收");
+                if (MachConnectCmdPacket.Cmd == 0x22)
                 {
                     #region Debug
                     //Console.WriteLine("接收 MachConnectCmdPacketServer : ");
@@ -234,28 +184,10 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachDataEchoPacketBytesSet(out Byte[] sendBytes)
-        {
-            sendBytes = new Byte[] {
-               0
-               ,1
-               ,0x30, 0x00
-               ,0x01
-               ,0,0
-               ,0x32,0x08
-               ,0x50
-               ,0
-               ,0,0,0,0
-               ,0x71,0x0c,0,0
-               ,0,0,0,0
-            };
-            Array.Resize(ref sendBytes, sendBytes.Length + 801);
-            sendBytes[sendBytes.Length - 1] = 0;
-        }
         private static void MachDataEchoPacketServer()
         {
-            byte[] sendBytes = new byte[] { };
-            MachConnectCmdPacketBytesSet(out sendBytes);
+            PacketSeting();
+            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
 
 
             bool _Close = false;
@@ -290,7 +222,10 @@ namespace UDPConsoleServer
         }
 
 
-
+        public static ScanEchoPacketStruct ScanEchoPack;
+        public static MachIDEchoPacketStruct MachIDEchoPack;
+        public static MachConnectEchoPacketStruct MachConnectEchoPack;
+        //public static MachDataCmdPacketStruct MachDataCmdPack;
         public static void PacketSeting()
         {
             #region ScanEchoPack
@@ -301,23 +236,34 @@ namespace UDPConsoleServer
             ScanEchoPack.Sum = 0x00;
             #endregion
 
+            #region MachIDEchoPack
+            MachIDEchoPack.ID = 0x0;
+            MachIDEchoPack.Sz = 0x43;
+            MachIDEchoPack.Cmd = 0x33;
+            MachIDEchoPack.Count = 0x0;
+            MachIDEchoPack.ID0 = 0x0;
+            MachIDEchoPack.Ver1 = 0x04;
+            MachIDEchoPack.Ver2 = 0x01;
+            MachIDEchoPack.BugFix = 0x01;
+            MachIDEchoPack.TypeID = 0x02;
+            MachIDEchoPack.SubTypeID = 0x0;
+            MachIDEchoPack.UserDef = "MachIDEchoPack Test UserDef";
+            MachIDEchoPack.Sum = 0x0;
+            #endregion
 
-            //            封包名稱 Byte 數 數值 備註
-            //1.ID < 2 > 0
-            //2.Sz < 2 > 0x43 封包長度[< ID0 > +< Ver1 > +…+< UserDef >]
-            //3.Cmd < 1 > 0x33 回應連線要求,表示同意連線要求。
-            //4.Count < 2 > 自定
-            //5.ID0 < 1 > 0
-            //6.Ver1 < 1 > 4
-            //7.Ver2 < 1 > 1
-            //8.BugFix < 2 > 1
-            //9.TypeID < 1 > 線切割機為 0x02，深孔機為 0x04
-            //10.SubTypeID < 1 >
-            //11.UserDef < 60 > 機台名稱
-            //12.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0;
 
-            #region MachIDCmdPack
-
+            #region MachConnectEchoPack
+            MachConnectEchoPack.ID = 0x01;
+            MachConnectEchoPack.Sz = 0x0C;
+            MachConnectEchoPack.Cmd = 0x31;
+            MachConnectEchoPack.Count = 0x00;
+            MachConnectEchoPack.DataSz0 = 0x04;
+            MachConnectEchoPack.DataCmd0 = 0x00;
+            MachConnectEchoPack.DataCmd1 = 0x00;
+            MachConnectEchoPack.Part = 0x00;
+            MachConnectEchoPack.Security = 0x01;
+            MachConnectEchoPack.MachID = 0x01;
+            MachConnectEchoPack.Sum = 0x00;
             #endregion
 
         }

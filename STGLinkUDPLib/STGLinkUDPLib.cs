@@ -21,27 +21,13 @@ namespace STGLinkUDP
                 Open(IP, Port);
                 LogHeadCreate(IP, Port);
                
-                ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
-                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
-                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(ScanCmdPacketResultByte , ScanEchoPacket.GetType());
-
-                Console.WriteLine("ScanEchoPacket.ID->{0}",ScanEchoPacket.ID);
-                Console.WriteLine("ScanEchoPacket.Sz->{0}",ScanEchoPacket.Sz);
-                Console.WriteLine("ScanEchoPacket.Cmd->{0}",ScanEchoPacket.Cmd);
-                Console.WriteLine("ScanEchoPacket.Count->{0}",ScanEchoPacket.Count);
-                Console.WriteLine("ScanEchoPacket.Sum->{0}",ScanEchoPacket.Sum);
-
-
-                ////2            
-                //MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
-
-                ////3
-                //MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
-
-                ////4
-                //MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
+                ScanCmdPacket(out byte[] ScanCmdPacketResultByte); 
+                MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
+                MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
+                MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
 
                 Destructor();
+
 
                 Thread.Sleep(5000);
             } while (true);
