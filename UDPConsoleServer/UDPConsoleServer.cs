@@ -29,17 +29,17 @@ namespace UDPConsoleServer
             _UC = new UdpClient(_IPEP.Port);
             do
             {
-                ScanCmdPacketServer();
-                MachIDCmdPacketServer();
-                MachConnectCmdPacketServer();
-                MachDataEchoPacketServer();
+                ScanPacketServer();
+                MachIDPacketServer();
+                MachConnectPacketServer();
+                MachDataPacketServer();
 
             } while (true);
 
 
         }
 
-        private static void ScanCmdPacketServer()
+        private static void ScanPacketServer()
         {
             #region ScanCmdPacketServer
             //1.ID < 2 > 0
@@ -84,7 +84,7 @@ namespace UDPConsoleServer
                 }
             }
         }
-        private static void MachIDCmdPacketServer()
+        private static void MachIDPacketServer()
         {
             #region MachIDCmdPacketServer
             //1.ID < 2 > 0
@@ -142,10 +142,10 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachConnectCmdPacketServer()
+        private static void MachConnectPacketServer()
         {
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
+            byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectEchoPack);
 
 
 
@@ -184,35 +184,21 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachDataEchoPacketServer()
+        private static void MachDataPacketServer()
         {
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
-
+            byte[] sendBytes = StructChangeClass.StructToBytes(MachDataEchoPack);
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
+                MachDataCmdPacketStruct MachDataCmdPacket = new MachDataCmdPacketStruct();
+                MachDataCmdPacket = (MachDataCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachDataCmdPacket.GetType());
+
                 Console.WriteLine("MachDataEchoPacketServer 接收");
 
 
-                #region Debug
-                //Console.WriteLine("接收 MachDataEchoPacketServer : ");
-                //foreach (byte buf in buffer)
-                //{
-                //    Console.WriteLine("buf->{0}", buf);
-                //}
-
-
-                //Console.WriteLine("回傳 MachDataEchoPacketServer : ");
-
-
-                //foreach (byte buf in sendBytes)
-                //{
-                //    Console.WriteLine("buf->{0}", buf);
-                //}
-                #endregion
                 Console.WriteLine("MachDataEchoPacketServer 回傳");
 
                 _UC.Send(sendBytes, sendBytes.Length, _IPEP);
@@ -225,7 +211,7 @@ namespace UDPConsoleServer
         public static ScanEchoPacketStruct ScanEchoPack;
         public static MachIDEchoPacketStruct MachIDEchoPack;
         public static MachConnectEchoPacketStruct MachConnectEchoPack;
-        //public static MachDataCmdPacketStruct MachDataCmdPack;
+        public static MachDataEchoPacketStruct MachDataEchoPack;
         public static void PacketSeting()
         {
             #region ScanEchoPack
@@ -264,6 +250,31 @@ namespace UDPConsoleServer
             MachConnectEchoPack.Security = 0x01;
             MachConnectEchoPack.MachID = 0x01;
             MachConnectEchoPack.Sum = 0x00;
+            #endregion
+
+            #region MachDataEchoPack
+            MachDataEchoPack.ID0 = 0x01;
+            MachDataEchoPack.ID1 = 0x0;
+            MachDataEchoPack.Sz = 0x303;
+            MachDataEchoPack.Cmd = 0x01;
+            MachDataEchoPack.Count = 0x0;
+            MachDataEchoPack.DataSz0 = 0x328;
+            MachDataEchoPack.DataCmd0 = 0x50;
+            MachDataEchoPack.DataCmd1 = 0x0;
+            MachDataEchoPack.Part = 0x0;
+            MachDataEchoPack.Code = 0x0;
+            MachDataEchoPack.Len = 0x71c;
+            MachDataEchoPack.ActctLen = 0x0;
+
+
+            //for (int i = 0; i < 305; i++)
+            //{
+            //    MachDataEchoPack.DataBuf += i.ToString();
+            //}
+            MachDataEchoPack.DataBuf = "1234567890123456" + "1234" ; 
+
+
+            MachDataEchoPack.Sum = 0x0;
             #endregion
 
         }
