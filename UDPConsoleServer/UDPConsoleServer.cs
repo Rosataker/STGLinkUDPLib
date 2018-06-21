@@ -253,6 +253,7 @@ namespace UDPConsoleServer
             #endregion
 
             #region MachDataEchoPack
+            
             MachDataEchoPack.ID0 = 0x01;
             MachDataEchoPack.ID1 = 0x0;
             MachDataEchoPack.Sz = 0x303;
@@ -266,12 +267,10 @@ namespace UDPConsoleServer
             MachDataEchoPack.Len = 0x71c;
             MachDataEchoPack.ActctLen = 0x0;
 
-
-            //for (int i = 0; i < 305; i++)
-            //{
-            //    MachDataEchoPack.DataBuf += i.ToString();
-            //}
-            MachDataEchoPack.DataBuf = "1234567890123456" + "1234" ; 
+            for (int i = 0; i < 800; i++)
+            {
+                MachDataEchoPack.DataBuf += i;
+            }
 
 
             MachDataEchoPack.Sum = 0x0;

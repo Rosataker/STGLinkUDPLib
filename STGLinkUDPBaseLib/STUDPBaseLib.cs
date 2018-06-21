@@ -160,11 +160,8 @@ namespace STGLinkUDP.STUDPBase
                     PacketSeting();
                     byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectCmdPack);
 
-
-
                     UC.Send(sendBytes, sendBytes.Length, IPEP);
                     ResultByte = UC.Receive(ref IPEP);
-
 
                     IMachConnectCmdPacketInterface.Log(sendBytes, "Send");
                     IMachConnectCmdPacketInterface.Log(ResultByte, "Result");
@@ -292,7 +289,7 @@ namespace STGLinkUDP.STUDPBase
             MachDataCmdPack.Part = 0x0;
             MachDataCmdPack.Code = 0x7A1;
             MachDataCmdPack.Len = 0x320;
-            MachDataCmdPack.DataBuf = "";
+            MachDataCmdPack.DataBuf="";
             MachDataCmdPack.Sum = 0x0;
             #endregion
 
