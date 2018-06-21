@@ -3,42 +3,28 @@ using System.Collections.Generic;
 using System.Text;
 using System.Configuration;
 using STGLinkUDP;
-using STGLinkUDP.STUDPBase;
 using System.IO;
 
 namespace ConsoleApp
 {
     class Program
-    {
-        private static string _IP = ConfigurationManager.AppSettings["_IP"];
-        private static int _PORT = Int32.Parse(ConfigurationManager.AppSettings["_PORT"], System.Globalization.NumberStyles.HexNumber);
-        private static int _Code = Int32.Parse(ConfigurationManager.AppSettings["_Code"], System.Globalization.NumberStyles.HexNumber);
-        private static int _Cmd = Int32.Parse(ConfigurationManager.AppSettings["_Cmd"], System.Globalization.NumberStyles.HexNumber);
+    {        
 
 
         static void Main(string[] args)
         {
-            STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib();
-
-            STUDPBaseLib._Code = _Code;
-            STUDPBaseLib._Cmd = _Cmd;
-
-            STGLinkUDPLib.RunClient(_IP, _PORT);
-            //STGLinkUDPLib.RunClient(_IP, 5555);
-
-
-            //foreach (string key in ConfigurationManager.AppSettings)
-            //{
-            //    string value = ConfigurationManager.AppSettings[key];
-            //    Console.WriteLine("Key: {0}, Value: {1}", key, value);
-            //}
-
+            IDictionary<string, string> configDic = new Dictionary<string, string>();
+            configDic["_IP"] = "127.0.0.1";
+            configDic["_PORT"] = 0x869C.ToString();
+            configDic["_Code"] = 0x7A1.ToString(); //.4.a MachDataCmdPacket
+            configDic["_Cmd"] = 0x01.ToString(); //.4.a MachDataCmdPacket
+            configDic["_Timeout_ms"] = "1500";
+            configDic["_Retry_count"] = "5";
+            STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib(configDic);
+            STGLinkUDPLib.RunClient();
 
 
             Console.Read();
         }
-
-
-
     }
 }

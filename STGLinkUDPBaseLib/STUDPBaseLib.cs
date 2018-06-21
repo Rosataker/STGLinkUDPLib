@@ -7,294 +7,64 @@ using System.IO;
 using System.Threading;
 using ISTUDP;
 using System.Runtime.InteropServices;
-using STUPBaseStruct;
 using System.Globalization;
 
-namespace STGLinkUDP.STUDPBase
+namespace STUDPBase
 {
-    public class STUDPBaseLib : ISTUDPInterface, IScanCmdPacketInterface, IMachIDCmdPacketInterface, IMachConnectCmdPacketInterface, IMachDataCmdPacketInterface
+    public class STUDPBaseLib : ISTUDPInterface
     {
-        public UdpClient UC;
-        public IPEndPoint IPEP;
-        public static int _Code;
-        public static int _Cmd;
-        private static STUDPBaseLib ISTUDPBaseLib = new STUDPBaseLib();
-        IScanCmdPacketInterface IScanCmdPacketInterface = ISTUDPBaseLib;
-        IMachIDCmdPacketInterface IMachIDCmdPacketInterface = ISTUDPBaseLib;
-        IMachConnectCmdPacketInterface IMachConnectCmdPacketInterface = ISTUDPBaseLib;
-        IMachDataCmdPacketInterface IMachDataCmdPacketInterface = ISTUDPBaseLib;
-        public static ScanCmdPacketStruct ScanCmdPack;
-        public static MachIDCmdPacketStruct MachIDCmdPack;
-        public static MachConnectCmdPacketStruct MachConnectCmdPack;
-        public static MachDataCmdPacketStruct MachDataCmdPack;
+        public static UdpClient _UdpClient;
+        public static IPEndPoint _IPEndPoint;
+        public static string _IP { get; private set; }
+        public static int _PORT { get; private set; }
+        public static int _Code { get; private set; }
+        public static byte _Cmd { get; private set; }
+        public static int _Timeout_ms { get; private set; }
+        public static int _Retry_count { get; private set; }
+        public static bool _configDicSetError { get; private set; }
 
-        private static string _IP { get; set; }
-        private static int _PORT { get; set; }
+        public STUDPBaseLib(IDictionary<string, string> configDic)
+        {
+            _configDicSetError = true;
+            if (!configDic.ContainsKey("_IP")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_PORT")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_Code")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_Cmd")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_Timeout_ms")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_Retry_count")) _configDicSetError = false;
+
+            if (!_configDicSetError)
+            {
+                Console.WriteLine("configDic Value Error!");
+                Console.Read();
+            }
+
+
+            _IP = configDic["_IP"];
+            _PORT = int.Parse(configDic["_PORT"]);
+            _Code = int.Parse(configDic["_Code"]);
+            _Cmd = byte.Parse(configDic["_Cmd"]);
+            _Timeout_ms = int.Parse(configDic["_Timeout_ms"]);
+            _Retry_count = int.Parse(configDic["_Retry_count"]);
+        }
 
         public bool Connected { get; set; }
 
-        public void Open(string IP, int Port)
+        public void Open()
         {
-
             Connected = true;
-            _IP = IP;
-            _PORT = Port;
-            IPEP = new IPEndPoint(IPAddress.Parse(IP), Port);
-            UC = new UdpClient();
-        }
-
-        void IScanCmdPacketInterface.Log(byte[] sendBytes, string status)
-        {
-            #region ScanCmdPacketSet
-            //1.ID < 2 > 0
-            //2.Sz < 2 > 0
-            //3.Cmd < 1 > 0x20
-            //4.Count < 2 > 自定
-            //5.Sum < 1 > Check Sum 之數值，此封包數值總合為 = 0;
-            #endregion
-
-            string history = "ScanCmdPacket " + status + " content:  \r\n";
-            foreach (byte item in sendBytes)
-            {
-                history += item + "\r\n";
-            }
-
-            LogLoopCreate(history);
-        }
-        public void ScanCmdPacket(out byte[] ResultByte)
-        {
-            ResultByte = new byte[] { };
-            try
-            {
-                PacketSeting();
-
-                byte[] sendBytes = StructChangeClass.StructToBytes(ScanCmdPack);
-
-
-                UC.Send(sendBytes, sendBytes.Length, IPEP);
-                IScanCmdPacketInterface.Log(sendBytes, "Send");
-
-                ResultByte = UC.Receive(ref IPEP);
-                IScanCmdPacketInterface.Log(ResultByte, "Result");
-
-
-            }
-            catch (Exception)
-            {
-                Connected = false;
-                Console.WriteLine("ScanCmdPacket connect error . ");
-                Console.WriteLine("IP->{0}", _IP);
-                Console.WriteLine("PORT->{0}", _PORT);
-
-
-
-            }
-        }
-
-        void IMachIDCmdPacketInterface.Log(byte[] sendBytes, string status)
-        {
-            string Title = "MachIDCmdPacket ";
-            string history = string.Empty;
-            history = Title + status + " content:  \r\n";
-            foreach (byte item in sendBytes)
-            {
-                history += item + "\r\n";
-            }
-
-            LogLoopCreate(history);
-        }
-
-        public void MachIDCmdPacket(byte[] DataByte, out byte[] ResultByte)
-        {
-            ResultByte = new byte[] { };
-            try
-            {                
-                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
-                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, ScanEchoPacket.GetType());
-
-                if (ScanEchoPacket.Cmd == 0x30)
-                {
-                    PacketSeting();
-                    byte[] sendBytes = StructChangeClass.StructToBytes(MachIDCmdPack);
-
-
-
-                    UC.Send(sendBytes, sendBytes.Length, IPEP);
-                    ResultByte = UC.Receive(ref IPEP);
-
-                    IMachIDCmdPacketInterface.Log(sendBytes, "Send");
-                    IMachIDCmdPacketInterface.Log(ResultByte, "Result");
-                }
-            }
-            catch (Exception)
-            {
-                Connected = false;
-                byte[] sendBytes = new byte[] { 0 };
-                IMachIDCmdPacketInterface.Log(sendBytes, "Error");
-            }
-        }
-
-        void IMachConnectCmdPacketInterface.Log(byte[] sendBytes, string status)
-        {
-            string Title = "MachConnectCmdPacket ";
-            string history = string.Empty;
-            history = Title + status + " content:  \r\n";
-            foreach (byte item in sendBytes)
-            {
-                history += item + "\r\n";
-            }
-
-            LogLoopCreate(history);
-        }
-        public void MachConnectCmdPacket(byte[] DataByte, out byte[] ResultByte)
-        {
-            ResultByte = new byte[] { };
-
-            try
-            {
-                MachIDEchoPacketStruct MachIDEchoPacket = new MachIDEchoPacketStruct();
-                MachIDEchoPacket = (MachIDEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachIDEchoPacket.GetType());
-
-                if (MachIDEchoPacket.Cmd == 0x33)
-                {
-                    PacketSeting();
-                    byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectCmdPack);
-
-                    UC.Send(sendBytes, sendBytes.Length, IPEP);
-                    ResultByte = UC.Receive(ref IPEP);
-
-                    IMachConnectCmdPacketInterface.Log(sendBytes, "Send");
-                    IMachConnectCmdPacketInterface.Log(ResultByte, "Result");
-                }
-            }
-            catch (Exception)
-            {
-                Connected = false;
-                byte[] sendBytes = new byte[] { 0 };
-                IMachConnectCmdPacketInterface.Log(sendBytes, "Error");
-            }
-
-
-        }
-
-        void IMachDataCmdPacketInterface.Log(byte[] sendBytes, string status)
-        {
-            string Title = "MachDataCmdPacket ";
-            string history = string.Empty;
-            history = Title + status + " content:  \r\n";
-            foreach (byte item in sendBytes)
-            {
-                history += item + "\r\n";
-            }
-
-            LogLoopCreate(history);
-        }
-
-        
-        public void MachDataCmdPacket(byte[] DataByte, out byte[] ResultByte)
-        {
-            ResultByte = new byte[] { };
-
-            try
-            {
-                MachConnectEchoPacketStruct MachConnectEchoPack = new MachConnectEchoPacketStruct();
-                MachConnectEchoPack = (MachConnectEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachConnectEchoPack.GetType());
-
-                if (MachConnectEchoPack.Cmd == 0x31 && MachConnectEchoPack.MachID == 0x01 )
-                {
-                    PacketSeting();
-                    byte[] sendBytes = StructChangeClass.StructToBytes(MachDataCmdPack);
-
-
-
-
-                    UC.Send(sendBytes, sendBytes.Length, IPEP);
-                    ResultByte = UC.Receive(ref IPEP);
-
-                    IMachDataCmdPacketInterface.Log(sendBytes, "Send");
-                    IMachDataCmdPacketInterface.Log(ResultByte, "Result");
-                }
-            }
-            catch (Exception)
-            {
-                Connected = false;
-                byte[] sendBytes = new byte[] { 0 };
-                IMachDataCmdPacketInterface.Log(sendBytes, "Error");
-            }
-        }
-
-
-
-        private static string _FILENAME = "STGLinkUDPLib Log.txt";
-        private static void LogLoopCreate(string history)
-        {
-            File.AppendAllText(_FILENAME, history + "\r\n");
+            _IPEndPoint = new IPEndPoint(IPAddress.Parse(_IP), _PORT);
+            _UdpClient = new UdpClient();
         }
 
         public void Destructor()
         {
             Connected = false;
-            UC.Close();
+            _UdpClient.Close();
         }
 
 
-        /// <summary>
-        ///     設定
-        /// </summary>
-        public static void PacketSeting()
-        {
-            #region ScanCmdPack
-            ScanCmdPack.ID = 0x00;
-            ScanCmdPack.Sz = 0x00;
-            ScanCmdPack.Cmd = 0x20;
-            ScanCmdPack.Count = 0x00;
-            ScanCmdPack.Sum = 0x00;
-            #endregion
 
-
-            #region MachIDCmdPack
-            MachIDCmdPack.ID = 0x00;
-            MachIDCmdPack.Sz = 0x00;
-            MachIDCmdPack.Cmd = 0x21;
-            MachIDCmdPack.Count = 0x00;
-            MachIDCmdPack.Sum = 0x00;
-            #endregion
-
-            #region MachConnectCmdPack
-            MachConnectCmdPack.ID = 0x01;
-            MachConnectCmdPack.Sz = 0x4A;
-            MachConnectCmdPack.Cmd = 0x22;
-            MachConnectCmdPack.Count = 0x00;
-            MachConnectCmdPack.DataSz0 = 0x42;
-            MachConnectCmdPack.DataCmd0 = 0x03;
-            MachConnectCmdPack.DataCmd1 = 0x00;
-            MachConnectCmdPack.Part = 0x00;
-            MachConnectCmdPack.Ver1 = 0x04;
-            MachConnectCmdPack.Ver2 = 0x03;
-            MachConnectCmdPack.BugFix = 0x07;
-            MachConnectCmdPack.TypeID = 0x10;
-            MachConnectCmdPack.Password = "0000";
-            MachConnectCmdPack.Sum = 0x00;
-            #endregion
-
-
-            #region MachDataCmdPack
-            MachDataCmdPack.ID0 = 0x01;
-            MachDataCmdPack.ID1 = 0x00;
-            MachDataCmdPack.Cmd = 0x01;
-            MachDataCmdPack.Count = 0x00;
-            MachDataCmdPack.DataSz0 = 0x328;
-            MachDataCmdPack.DataCmd0 = 0x50;
-            MachDataCmdPack.DataCmd1 = 0x0;
-            MachDataCmdPack.Part = 0x0;
-            MachDataCmdPack.Code = 0x7A1;
-            MachDataCmdPack.Len = 0x320;
-            MachDataCmdPack.DataBuf="";
-            MachDataCmdPack.Sum = 0x0;
-            #endregion
-
-
-        }
     }
 
 

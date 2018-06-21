@@ -4,8 +4,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using STGLinkUDP;
 using STUPBaseStruct;
-using STGLinkUDP.STUDPBase;
 
 namespace UDPConsoleServer
 {
@@ -18,7 +18,7 @@ namespace UDPConsoleServer
 
         static void Main(string[] args)
         {
-            STUDPBaseLib.PacketSeting();
+            STGLinkUDPLib.PacketSeting();
             Console.WriteLine("這是伺服器...\n");
 
 

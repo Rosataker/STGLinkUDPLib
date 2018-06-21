@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using STGLinkUDP.STUDPBase;
 using STUPBaseStruct;
+using STUDPBase;
+using System.Threading;
+using System.Runtime.InteropServices;
+using System.Globalization;
+
+
 
 
 namespace STGLinkUDP
@@ -12,61 +18,159 @@ namespace STGLinkUDP
     public class STGLinkUDPLib : STUDPBaseLib
     {
         private static string _FILENAME = "STGLinkUDPLib Log.txt";
+        public static ScanCmdPacketStruct ScanCmdPack;
+        public static MachIDCmdPacketStruct MachIDCmdPack;
+        public static MachConnectCmdPacketStruct MachConnectCmdPack;
+        public static MachDataCmdPacketStruct MachDataCmdPack;
 
 
-        public void RunClient(string IP, int Port)
+
+
+        public STGLinkUDPLib(IDictionary<string, string> configDic) : base(configDic) { }
+
+
+        public void RunClient()
         {
 
 
             do
             {
-                Open(IP, Port);
-                LogHeadCreate(IP, Port);
+                Open();
+                LogHeadCreate(_IP, _PORT);
 
                 ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
                 MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
                 MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
                 MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
                 Destructor();
-                //byte[] MachDataCmdPacketResultByte = new byte[] { };
-                OpenMachDataPacke(MachDataCmdPacketResultByte);
-                Console.Read();
 
-                
+                OpenMachDataPacke(MachDataCmdPacketResultByte);
+
+
+
 
 
                 Thread.Sleep(5000);
             } while (true);
 
         }
-        
+
+
+        public void ScanCmdPacket(out byte[] ResultByte)
+        {
+            ResultByte = new byte[] { };
+            try
+            {
+                PacketSeting();
+
+                byte[] sendBytes = StructChangeClass.StructToBytes(ScanCmdPack);
+
+
+                _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
+                ResultByte = _UdpClient.Receive(ref _IPEndPoint);
+
+
+            }
+            catch (Exception)
+            {
+                Connected = false;
+                Console.WriteLine("ScanCmdPacket connect error . ");
+                Console.WriteLine("IP->{0}", _IP);
+                Console.WriteLine("PORT->{0}", _PORT);
+
+
+
+            }
+        }
+
+
+        public void MachIDCmdPacket(byte[] DataByte, out byte[] ResultByte)
+        {
+            ResultByte = new byte[] { };
+            try
+            {
+                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
+                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, ScanEchoPacket.GetType());
+
+
+                PacketSeting();
+                byte[] sendBytes = StructChangeClass.StructToBytes(MachIDCmdPack);
+
+
+
+                _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
+                ResultByte = _UdpClient.Receive(ref _IPEndPoint);
+
+            }
+            catch (Exception)
+            {
+                Connected = false;
+            }
+        }
+
+
+        public void MachConnectCmdPacket(byte[] DataByte, out byte[] ResultByte)
+        {
+            ResultByte = new byte[] { };
+
+            try
+            {
+                MachIDEchoPacketStruct MachIDEchoPacket = new MachIDEchoPacketStruct();
+                MachIDEchoPacket = (MachIDEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachIDEchoPacket.GetType());
+
+
+                PacketSeting();
+                byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectCmdPack);
+
+                _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
+                ResultByte = _UdpClient.Receive(ref _IPEndPoint);
+
+
+            }
+            catch (Exception)
+            {
+                Connected = false;
+            }
+
+
+        }
+
+
+        public void MachDataCmdPacket(byte[] DataByte, out byte[] ResultByte)
+        {
+            ResultByte = new byte[] { };
+
+            try
+            {
+                MachConnectEchoPacketStruct MachConnectEchoPack = new MachConnectEchoPacketStruct();
+                MachConnectEchoPack = (MachConnectEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachConnectEchoPack.GetType());
+
+
+                PacketSeting();
+                MachDataCmdPack.ID0 = Convert.ToByte(MachConnectEchoPack.MachID);
+                MachDataCmdPack.Cmd = _Cmd;
+                MachDataCmdPack.Code = _Code;
+
+                byte[] sendBytes = StructChangeClass.StructToBytes(MachDataCmdPack);
+
+
+
+                _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
+                ResultByte = _UdpClient.Receive(ref _IPEndPoint);
+
+
+
+            }
+            catch (Exception)
+            {
+                Connected = false;
+
+            }
+        }
+
         private static void OpenMachDataPacke(byte[] MachDataCmdPacketResultByte)
         {
 
-
-            #region MachDataEchoPack Test (測完就刪掉)
-            //MachDataEchoPacketStruct MachDataEchoPack = new MachDataEchoPacketStruct();
-            //MachDataEchoPack.ID0 = 0x01;
-            //MachDataEchoPack.ID1 = 0x0;
-            //MachDataEchoPack.Sz = 0x303;
-            //MachDataEchoPack.Cmd = 0x01;
-            //MachDataEchoPack.Count = 0x0;
-            //MachDataEchoPack.DataSz0 = 0x328;
-            //MachDataEchoPack.DataCmd0 = 0x50;
-            //MachDataEchoPack.DataCmd1 = 0x0;
-            //MachDataEchoPack.Part = 0x0;
-            //MachDataEchoPack.Code = 0x0;
-            //MachDataEchoPack.Len = 0x71c;
-            //MachDataEchoPack.ActctLen = 0x0;
-
-            //for (int i = 0; i < 800; i++)
-            //{
-            //    MachDataEchoPack.DataBuf += i;
-            //}
-
-
-            //MachDataEchoPack.Sum = 0x0;
-            #endregion
 
             WIRE_MMI1_INFO MMI_INFO = new WIRE_MMI1_INFO();
             MachDataEchoPacketStruct MachDataEchoPack = new MachDataEchoPacketStruct();
@@ -78,41 +182,46 @@ namespace STGLinkUDP
             {
                 MMI_INFO = (WIRE_MMI1_INFO)StructChangeClass.BytesToStruct(BeforeDataBuf, MMI_INFO.GetType());
 
+                string history = string.Empty;
 
-                Console.WriteLine("=>time: {0} sec", MMI_INFO.DATE_TIME);
-                Console.WriteLine("=>GAP: {0} v", MMI_INFO.GAP);
-                Console.WriteLine("=>機台進機率: {0} mm/min ", MMI_INFO.FEED);
-                Console.WriteLine("=>放電時間比: {0} ", MMI_INFO.HIPWR);
-                Console.WriteLine("=>水阻值: {0} ", MMI_INFO.WATER_RESIST);
-                Console.WriteLine("=>目前加工主程式: {0}", MMI_INFO.MFN);
-                Console.WriteLine("=>目前加工程式: {0}", MMI_INFO.FN);
-                Console.WriteLine("=>目前加工行: {0}", MMI_INFO.BN);
-                Console.WriteLine("=>目前已放電時間: {0} ms", MMI_INFO.CUT_TM);
-                Console.WriteLine("=>預計完成時間: {0} ms", MMI_INFO.EST_TM);
-                Console.WriteLine("=>顯示錯誤號碼: {0} ", MMI_INFO.ALARM_CODE);
-                Console.WriteLine("=>當前訊息字串: {0} ", MMI_INFO.MESSAGE);
-                Console.WriteLine("=>當前放電碼: {0} ", MMI_INFO.SCODE);
+                history += "=>time: " + MMI_INFO.DATE_TIME + " sec \r\n";
+                history += "=>GAP: " + MMI_INFO.GAP + " v \r\n";
+                history += "=>機台進機率: " + MMI_INFO.FEED + " mm/min \r\n";
+                history += "=>放電時間比: " + MMI_INFO.HIPWR + "\r\n";
+                history += "=>水阻值: " + MMI_INFO.WATER_RESIST + "\r\n";
+                history += "=>目前加工主程式: " + MMI_INFO.MFN + "\r\n";
+                history += "=>目前加工程式: " + MMI_INFO.FN + "\r\n";
+                history += "=>目前加工行: " + MMI_INFO.BN + "\r\n";
+                history += "=>目前已放電時間: " + MMI_INFO.CUT_TM + " ms \r\n";
+                history += "=>預計完成時間: " + MMI_INFO.EST_TM + " ms \r\n";
+                history += "=>顯示錯誤號碼: " + MMI_INFO.ALARM_CODE + "  \r\n";
+                history += "=>當前訊息字串: " + MMI_INFO.MESSAGE + "  \r\n";
+                history += "=>當前放電碼: " + MMI_INFO.SCODE + "  \r\n";
 
+                history += "=>下伸臂溫度: " + MMI_INFO.TEMP[0] + "  \r\n";
+                history += "=>機體溫度: " + MMI_INFO.TEMP[1] + "  \r\n";
+                history += "=>室內溫度: " + MMI_INFO.TEMP[2] + "  \r\n";
 
-                Console.WriteLine("=>下伸臂溫度: {0} ", MMI_INFO.TEMP[0]);
-                Console.WriteLine("=>機體溫度: {0} ", MMI_INFO.TEMP[1]);
-                Console.WriteLine("=>室內溫度: {0} ", MMI_INFO.TEMP[2]);
-                Console.WriteLine("=>冷郤機環境: {0} ", MMI_INFO.TEMP[10]);
-                Console.WriteLine("=>目標溫度: {0} ", MMI_INFO.TEMP[11]);
+                history += "=>冷郤機環境: " + MMI_INFO.TEMP[10] + "  \r\n";
+                history += "=>目標溫度: " + MMI_INFO.TEMP[11] + "  \r\n";
 
-                Console.WriteLine("=>機台狀態: {0} ", MMI_INFO.MACH_STATE);
-                Console.WriteLine("=>機台錯誤訊息: {0} ", MMI_INFO.MACH_ALARM);
-                Console.WriteLine("=>程式工作中的警告號碼: {0} ", MMI_INFO.MEM_ALARM);
-                Console.WriteLine("=>程式工作中的錯誤號碼: {0} ", MMI_INFO.MEM_ERROR);
+                history += "=>機台狀態: " + MMI_INFO.MACH_STATE + "  \r\n";
+                history += "=>機台錯誤訊息: " + MMI_INFO.MACH_ALARM + "  \r\n";
 
-                Console.WriteLine("=>機台狀態: {0} ", MMI_INFO.MEM_STATE);
-                Console.WriteLine("=>程式目前加工長度: {0} ", MMI_INFO.TOTAL_LEN);
-                Console.WriteLine("=>程式剩餘長度: {0}", MMI_INFO.REST_LEN);
-                Console.WriteLine("=>系統狀態: {0}", MMI_INFO.SysStatus);
-                Console.WriteLine("=>放電開始時數: {0} ms", MMI_INFO.SparkIOCount);
-                Console.WriteLine("=>加工時速度: {0} mm*mm / min", MMI_INFO.SquareSpeed);
+                history += "=>程式工作中的警告號碼: " + MMI_INFO.MEM_ALARM + "  \r\n";
+                history += "=>程式工作中的錯誤號碼: " + MMI_INFO.MEM_ERROR + "  \r\n";
 
+                history += "=>機台狀態: " + MMI_INFO.MEM_STATE + "  \r\n";
+                history += "=>程式目前加工長度: " + MMI_INFO.TOTAL_LEN + "  \r\n";
 
+                history += "=>程式剩餘長度: " + MMI_INFO.REST_LEN + "  \r\n";
+                history += "=>系統狀態: " + MMI_INFO.SysStatus + "  \r\n";
+
+                history += "=>放電開始時數: " + MMI_INFO.SparkIOCount + "  ms \r\n";
+                history += "=>加工時速度: " + MMI_INFO.SquareSpeed + " mm*mm / min \r\n";
+
+                Console.WriteLine(history);
+                LogLoopCreate(history);
             }
             catch (Exception)
             {
@@ -121,7 +230,6 @@ namespace STGLinkUDP
 
 
         }
-
 
         private static void LogHeadCreate(string IP, int Port)
         {
@@ -134,5 +242,70 @@ namespace STGLinkUDP
             File.AppendAllText(_FILENAME, "PORT" + "：" + Port + "\r\n");
             File.AppendAllText(_FILENAME, "\r\n");
         }
+
+        private static void LogLoopCreate(string history)
+        {
+            File.AppendAllText(_FILENAME, history + "\r\n");
+        }
+
+
+        /// <summary>
+        ///     設定
+        /// </summary>
+        public static void PacketSeting()
+        {
+            #region ScanCmdPack
+            ScanCmdPack.ID = 0x00;
+            ScanCmdPack.Sz = 0x00;
+            ScanCmdPack.Cmd = 0x20;
+            ScanCmdPack.Count = 0x00;
+            ScanCmdPack.Sum = 0x00;
+            #endregion
+
+
+            #region MachIDCmdPack
+            MachIDCmdPack.ID = 0x00;
+            MachIDCmdPack.Sz = 0x00;
+            MachIDCmdPack.Cmd = 0x21;
+            MachIDCmdPack.Count = 0x00;
+            MachIDCmdPack.Sum = 0x00;
+            #endregion
+
+            #region MachConnectCmdPack
+            MachConnectCmdPack.ID = 0x01;
+            MachConnectCmdPack.Sz = 0x4A;
+            MachConnectCmdPack.Cmd = 0x22;
+            MachConnectCmdPack.Count = 0x00;
+            MachConnectCmdPack.DataSz0 = 0x42;
+            MachConnectCmdPack.DataCmd0 = 0x03;
+            MachConnectCmdPack.DataCmd1 = 0x00;
+            MachConnectCmdPack.Part = 0x00;
+            MachConnectCmdPack.Ver1 = 0x04;
+            MachConnectCmdPack.Ver2 = 0x03;
+            MachConnectCmdPack.BugFix = 0x07;
+            MachConnectCmdPack.TypeID = 0x10;
+            MachConnectCmdPack.Password = "0000";
+            MachConnectCmdPack.Sum = 0x00;
+            #endregion
+
+
+            #region MachDataCmdPack
+            MachDataCmdPack.ID0 = 0x01;
+            MachDataCmdPack.ID1 = 0x00;
+            MachDataCmdPack.Cmd = 0x01;
+            MachDataCmdPack.Count = 0x00;
+            MachDataCmdPack.DataSz0 = 0x328;
+            MachDataCmdPack.DataCmd0 = 0x50;
+            MachDataCmdPack.DataCmd1 = 0x0;
+            MachDataCmdPack.Part = 0x0;
+            MachDataCmdPack.Code = 0x7A1;
+            MachDataCmdPack.Len = 0x320;
+            MachDataCmdPack.DataBuf = "";
+            MachDataCmdPack.Sum = 0x0;
+            #endregion
+
+
+        }
     }
+
 }

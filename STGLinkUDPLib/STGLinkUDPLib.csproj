@@ -37,6 +37,7 @@
   <ItemGroup>
     <Compile Include="STGLinkUDPLib.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="STUPBaseStruct.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\STGLinkUDPBaseLib\STUDPBaseLib.csproj">

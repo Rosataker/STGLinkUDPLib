@@ -36,7 +36,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="STUPBaseStruct.cs" />
     <Compile Include="ISTUDPInterface.cs" />
     <Compile Include="STUDPBaseLib.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
