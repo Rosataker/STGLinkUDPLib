@@ -17,7 +17,7 @@ namespace STGLinkUDP
 {
     public class STGLinkUDPLib : STUDPBaseLib
     {
-        private static string _FILENAME = "STGLinkUDPLib Log.txt";
+        private string _FILENAME { get; set; }
         public static ScanCmdPacketStruct ScanCmdPack;
         public static MachIDCmdPacketStruct MachIDCmdPack;
         public static MachConnectCmdPacketStruct MachConnectCmdPack;
@@ -26,7 +26,7 @@ namespace STGLinkUDP
 
 
 
-        public STGLinkUDPLib(IDictionary<string, string> configDic) : base(configDic) { }
+        public STGLinkUDPLib(IDictionary<string, string> configDic) : base(configDic) { _FILENAME = "STGLinkUDPLib Log.txt"; }
 
 
         public void RunClient()
@@ -63,7 +63,7 @@ namespace STGLinkUDP
             {
                 PacketSeting();
 
-                byte[] sendBytes = StructChangeClass.StructToBytes(ScanCmdPack);
+                byte[] sendBytes = StructToBytes(ScanCmdPack);
 
 
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
@@ -90,11 +90,11 @@ namespace STGLinkUDP
             try
             {
                 ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
-                ScanEchoPacket = (ScanEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, ScanEchoPacket.GetType());
+                ScanEchoPacket = (ScanEchoPacketStruct)BytesToStruct(DataByte, ScanEchoPacket.GetType());
 
 
                 PacketSeting();
-                byte[] sendBytes = StructChangeClass.StructToBytes(MachIDCmdPack);
+                byte[] sendBytes = StructToBytes(MachIDCmdPack);
 
 
 
@@ -116,11 +116,11 @@ namespace STGLinkUDP
             try
             {
                 MachIDEchoPacketStruct MachIDEchoPacket = new MachIDEchoPacketStruct();
-                MachIDEchoPacket = (MachIDEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachIDEchoPacket.GetType());
+                MachIDEchoPacket = (MachIDEchoPacketStruct)BytesToStruct(DataByte, MachIDEchoPacket.GetType());
 
 
                 PacketSeting();
-                byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectCmdPack);
+                byte[] sendBytes = StructToBytes(MachConnectCmdPack);
 
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
                 ResultByte = _UdpClient.Receive(ref _IPEndPoint);
@@ -143,7 +143,7 @@ namespace STGLinkUDP
             try
             {
                 MachConnectEchoPacketStruct MachConnectEchoPack = new MachConnectEchoPacketStruct();
-                MachConnectEchoPack = (MachConnectEchoPacketStruct)StructChangeClass.BytesToStruct(DataByte, MachConnectEchoPack.GetType());
+                MachConnectEchoPack = (MachConnectEchoPacketStruct)BytesToStruct(DataByte, MachConnectEchoPack.GetType());
 
 
                 PacketSeting();
@@ -151,7 +151,7 @@ namespace STGLinkUDP
                 MachDataCmdPack.Cmd = _Cmd;
                 MachDataCmdPack.Code = _Code;
 
-                byte[] sendBytes = StructChangeClass.StructToBytes(MachDataCmdPack);
+                byte[] sendBytes = StructToBytes(MachDataCmdPack);
 
 
 
@@ -168,19 +168,19 @@ namespace STGLinkUDP
             }
         }
 
-        private static void OpenMachDataPacke(byte[] MachDataCmdPacketResultByte)
+        private void OpenMachDataPacke(byte[] MachDataCmdPacketResultByte)
         {
 
 
             WIRE_MMI1_INFO MMI_INFO = new WIRE_MMI1_INFO();
             MachDataEchoPacketStruct MachDataEchoPack = new MachDataEchoPacketStruct();
-            MachDataEchoPack = (MachDataEchoPacketStruct)StructChangeClass.BytesToStruct(MachDataCmdPacketResultByte, MachDataEchoPack.GetType());
+            MachDataEchoPack = (MachDataEchoPacketStruct)BytesToStruct(MachDataCmdPacketResultByte, MachDataEchoPack.GetType());
 
             byte[] BeforeDataBuf = Encoding.UTF8.GetBytes(MachDataEchoPack.DataBuf);
 
             try
             {
-                MMI_INFO = (WIRE_MMI1_INFO)StructChangeClass.BytesToStruct(BeforeDataBuf, MMI_INFO.GetType());
+                MMI_INFO = (WIRE_MMI1_INFO)BytesToStruct(BeforeDataBuf, MMI_INFO.GetType());
 
                 string history = string.Empty;
 
@@ -231,7 +231,7 @@ namespace STGLinkUDP
 
         }
 
-        private static void LogHeadCreate(string IP, int Port)
+        private void LogHeadCreate(string IP, int Port)
         {
 
             DateTime Date = DateTime.Now;
@@ -243,7 +243,7 @@ namespace STGLinkUDP
             File.AppendAllText(_FILENAME, "\r\n");
         }
 
-        private static void LogLoopCreate(string history)
+        private void LogLoopCreate(string history)
         {
             File.AppendAllText(_FILENAME, history + "\r\n");
         }
@@ -252,7 +252,7 @@ namespace STGLinkUDP
         /// <summary>
         ///     設定
         /// </summary>
-        public static void PacketSeting()
+        public void PacketSeting()
         {
             #region ScanCmdPack
             ScanCmdPack.ID = 0x00;
@@ -305,6 +305,42 @@ namespace STGLinkUDP
             #endregion
 
 
+        }
+
+
+        //struct to byte[]
+        private byte[] StructToBytes(object structObj)
+        {
+            int size = Marshal.SizeOf(structObj);
+
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(structObj, buffer, false);
+                byte[] bytes = new byte[size];
+                Marshal.Copy(buffer, bytes, 0, size);
+                return bytes;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
+        }
+
+        //byte[] to struct
+        private object BytesToStruct(byte[] bytes, Type strcutType)
+        {
+            int size = Marshal.SizeOf(strcutType);
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.Copy(bytes, 0, buffer, size);
+                return Marshal.PtrToStructure(buffer, strcutType);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
         }
     }
 

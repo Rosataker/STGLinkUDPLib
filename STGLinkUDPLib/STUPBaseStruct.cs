@@ -302,45 +302,4 @@ namespace STUPBaseStruct
     //unsigned short MACH_ALARM; //機台錯誤訊息(參考ERROR.TXT)
 
 
-    /// <summary>
-    /// struct and byte change
-    /// </summary>
-    public static class StructChangeClass
-    {
-
-        //struct to byte[]
-        public static byte[] StructToBytes(object structObj)
-        {
-            int size = Marshal.SizeOf(structObj);
-
-            IntPtr buffer = Marshal.AllocHGlobal(size);
-            try
-            {
-                Marshal.StructureToPtr(structObj, buffer, false);
-                byte[] bytes = new byte[size];
-                Marshal.Copy(buffer, bytes, 0, size);
-                return bytes;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
-            }
-        }
-
-        //byte[] to struct
-        public static object BytesToStruct(byte[] bytes, Type strcutType)
-        {
-            int size = Marshal.SizeOf(strcutType);
-            IntPtr buffer = Marshal.AllocHGlobal(size);
-            try
-            {
-                Marshal.Copy(bytes, 0, buffer, size);
-                return Marshal.PtrToStructure(buffer, strcutType);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
-            }
-        }
-    }
 }

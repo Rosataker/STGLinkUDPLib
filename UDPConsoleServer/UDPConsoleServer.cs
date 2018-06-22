@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using STGLinkUDP;
@@ -18,7 +19,8 @@ namespace UDPConsoleServer
 
         static void Main(string[] args)
         {
-            STGLinkUDPLib.PacketSeting();
+            UDPConsoleServer UDPConsoleServer = new UDPConsoleServer();
+            UDPConsoleServer.PacketSeting();
             Console.WriteLine("這是伺服器...\n");
 
 
@@ -29,17 +31,17 @@ namespace UDPConsoleServer
             _UC = new UdpClient(_IPEP.Port);
             do
             {
-                ScanPacketServer();
-                MachIDPacketServer();
-                MachConnectPacketServer();
-                MachDataPacketServer();
+                UDPConsoleServer.ScanPacketServer();
+                UDPConsoleServer.MachIDPacketServer();
+                UDPConsoleServer.MachConnectPacketServer();
+                UDPConsoleServer.MachDataPacketServer();
 
             } while (true);
 
 
         }
 
-        private static void ScanPacketServer()
+        private void ScanPacketServer()
         {
             #region ScanCmdPacketServer
             //1.ID < 2 > 0
@@ -49,16 +51,16 @@ namespace UDPConsoleServer
             //5.Sum < 1 > CheckSum 之數值，此封包數值總合為 = 0;
             #endregion
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(ScanEchoPack);
+            byte[] sendBytes = StructToBytes(ScanEchoPack);
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
                 ScanCmdPacketStruct ScanCmdPacket = new ScanCmdPacketStruct();
-                ScanCmdPacket = (ScanCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, ScanCmdPacket.GetType());
+                ScanCmdPacket = (ScanCmdPacketStruct)BytesToStruct(buffer, ScanCmdPacket.GetType());
 
-                Console.WriteLine("ScanCmdPacketServer 接收");              
+                Console.WriteLine("ScanCmdPacketServer 接收");
                 if (ScanCmdPacket.Cmd == 0x20)
                 {
                     #region Debug
@@ -84,7 +86,7 @@ namespace UDPConsoleServer
                 }
             }
         }
-        private static void MachIDPacketServer()
+        private void MachIDPacketServer()
         {
             #region MachIDCmdPacketServer
             //1.ID < 2 > 0
@@ -102,7 +104,7 @@ namespace UDPConsoleServer
             #endregion
 
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(MachIDEchoPack);
+            byte[] sendBytes = StructToBytes(MachIDEchoPack);
 
 
 
@@ -110,9 +112,9 @@ namespace UDPConsoleServer
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
-                
+
                 MachIDCmdPacketStruct MachIDCmdPacket = new MachIDCmdPacketStruct();
-                MachIDCmdPacket = (MachIDCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachIDCmdPacket.GetType());
+                MachIDCmdPacket = (MachIDCmdPacketStruct)BytesToStruct(buffer, MachIDCmdPacket.GetType());
 
                 Console.WriteLine("MachIDCmdPacketServer 接收");
 
@@ -142,10 +144,10 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachConnectPacketServer()
+        private void MachConnectPacketServer()
         {
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(MachConnectEchoPack);
+            byte[] sendBytes = StructToBytes(MachConnectEchoPack);
 
 
 
@@ -154,7 +156,7 @@ namespace UDPConsoleServer
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
                 MachConnectCmdPacketStruct MachConnectCmdPacket = new MachConnectCmdPacketStruct();
-                MachConnectCmdPacket = (MachConnectCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachConnectCmdPacket.GetType());
+                MachConnectCmdPacket = (MachConnectCmdPacketStruct)BytesToStruct(buffer, MachConnectCmdPacket.GetType());
 
 
                 Console.WriteLine("MachConnectCmdPacketServer 接收");
@@ -184,17 +186,17 @@ namespace UDPConsoleServer
             }
         }
 
-        private static void MachDataPacketServer()
+        private void MachDataPacketServer()
         {
             PacketSeting();
-            byte[] sendBytes = StructChangeClass.StructToBytes(MachDataEchoPack);
+            byte[] sendBytes = StructToBytes(MachDataEchoPack);
 
             bool _Close = false;
             while (!_Close)
             {
                 byte[] buffer = _UC.Receive(ref _IPEP);
                 MachDataCmdPacketStruct MachDataCmdPacket = new MachDataCmdPacketStruct();
-                MachDataCmdPacket = (MachDataCmdPacketStruct)StructChangeClass.BytesToStruct(buffer, MachDataCmdPacket.GetType());
+                MachDataCmdPacket = (MachDataCmdPacketStruct)BytesToStruct(buffer, MachDataCmdPacket.GetType());
 
                 Console.WriteLine("MachDataEchoPacketServer 接收");
 
@@ -208,11 +210,11 @@ namespace UDPConsoleServer
         }
 
 
-        public static ScanEchoPacketStruct ScanEchoPack;
-        public static MachIDEchoPacketStruct MachIDEchoPack;
-        public static MachConnectEchoPacketStruct MachConnectEchoPack;
-        public static MachDataEchoPacketStruct MachDataEchoPack;
-        public static void PacketSeting()
+        private ScanEchoPacketStruct ScanEchoPack;
+        private MachIDEchoPacketStruct MachIDEchoPack;
+        private MachConnectEchoPacketStruct MachConnectEchoPack;
+        private MachDataEchoPacketStruct MachDataEchoPack;
+        private void PacketSeting()
         {
             #region ScanEchoPack
             ScanEchoPack.ID = 0x0;
@@ -253,7 +255,7 @@ namespace UDPConsoleServer
             #endregion
 
             #region MachDataEchoPack
-            
+
             MachDataEchoPack.ID0 = 0x01;
             MachDataEchoPack.ID1 = 0x0;
             MachDataEchoPack.Sz = 0x303;
@@ -276,6 +278,42 @@ namespace UDPConsoleServer
             MachDataEchoPack.Sum = 0x0;
             #endregion
 
+        }
+
+
+        //struct to byte[]
+        private byte[] StructToBytes(object structObj)
+        {
+            int size = Marshal.SizeOf(structObj);
+
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(structObj, buffer, false);
+                byte[] bytes = new byte[size];
+                Marshal.Copy(buffer, bytes, 0, size);
+                return bytes;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
+        }
+
+        //byte[] to struct
+        private object BytesToStruct(byte[] bytes, Type strcutType)
+        {
+            int size = Marshal.SizeOf(strcutType);
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.Copy(bytes, 0, buffer, size);
+                return Marshal.PtrToStructure(buffer, strcutType);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
         }
     }
 
