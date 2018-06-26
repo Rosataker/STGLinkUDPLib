@@ -18,39 +18,56 @@ namespace STGLinkUDP
     public class STGLinkUDPLib : STUDPBaseLib
     {
         private string _FILENAME { get; set; }
-        public static ScanCmdPacketStruct ScanCmdPack;
-        public static MachIDCmdPacketStruct MachIDCmdPack;
-        public static MachConnectCmdPacketStruct MachConnectCmdPack;
-        public static MachDataCmdPacketStruct MachDataCmdPack;
-
-
-
+        private ScanCmdPacketStruct ScanCmdPack;
+        private MachIDCmdPacketStruct MachIDCmdPack;
+        private MachConnectCmdPacketStruct MachConnectCmdPack;
+        private MachDataCmdPacketStruct MachDataCmdPack;
 
         public STGLinkUDPLib(IDictionary<string, string> configDic) : base(configDic) { _FILENAME = "STGLinkUDPLib Log.txt"; }
 
-
         public void RunClient()
         {
+            PacketSeting();
 
 
+            int i = 1;
             do
             {
                 Open();
+                _UdpClient.Client.ReceiveTimeout = _TIMEOUT_MS;
+
                 LogHeadCreate(_IP, _PORT);
+                Console.WriteLine("run->{0}", i);
 
                 ScanCmdPacket(out byte[] ScanCmdPacketResultByte);
-                MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
-                MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
-                MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
-                Destructor();
+                if (Connected)
+                {
+                    MachIDCmdPacket(ScanCmdPacketResultByte, out byte[] MachIDCmdPacketResultByte);
+                    if (Connected)
+                    {
+                        MachConnectCmdPacket(MachIDCmdPacketResultByte, out byte[] MachConnectCmdPacketResultByte);
+                        if (Connected)
+                        {
+                            MachDataCmdPacket(MachConnectCmdPacketResultByte, out byte[] MachDataCmdPacketResultByte);
+                            if (Connected)
+                            {
+                                OpenMachDataPacke(MachDataCmdPacketResultByte);
+                            }
+                        }
+                    }
+                }
 
-                OpenMachDataPacke(MachDataCmdPacketResultByte);
 
+                
+                
 
+                
 
 
 
                 Thread.Sleep(5000);
+                Destructor();
+                i++;
             } while (true);
 
         }
@@ -61,11 +78,10 @@ namespace STGLinkUDP
             ResultByte = new byte[] { };
             try
             {
-                PacketSeting();
 
                 byte[] sendBytes = StructToBytes(ScanCmdPack);
 
-
+                
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
                 ResultByte = _UdpClient.Receive(ref _IPEndPoint);
 
@@ -89,21 +105,22 @@ namespace STGLinkUDP
             ResultByte = new byte[] { };
             try
             {
-                ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
-                ScanEchoPacket = (ScanEchoPacketStruct)BytesToStruct(DataByte, ScanEchoPacket.GetType());
+                //ScanEchoPacketStruct ScanEchoPacket = new ScanEchoPacketStruct();
+                //ScanEchoPacket = (ScanEchoPacketStruct)BytesToStruct(DataByte, ScanEchoPacket.GetType());
 
 
-                PacketSeting();
+                //PacketSeting();
                 byte[] sendBytes = StructToBytes(MachIDCmdPack);
-
 
 
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
                 ResultByte = _UdpClient.Receive(ref _IPEndPoint);
 
+
             }
-            catch (Exception)
+            catch (SocketException)
             {
+                Console.WriteLine("MachIDCmdPacket send error");
                 Connected = false;
             }
         }
@@ -115,12 +132,11 @@ namespace STGLinkUDP
 
             try
             {
-                MachIDEchoPacketStruct MachIDEchoPacket = new MachIDEchoPacketStruct();
-                MachIDEchoPacket = (MachIDEchoPacketStruct)BytesToStruct(DataByte, MachIDEchoPacket.GetType());
+                //MachIDEchoPacketStruct MachIDEchoPacket = new MachIDEchoPacketStruct();
+                //MachIDEchoPacket = (MachIDEchoPacketStruct)BytesToStruct(DataByte, MachIDEchoPacket.GetType());
 
-
-                PacketSeting();
                 byte[] sendBytes = StructToBytes(MachConnectCmdPack);
+
 
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
                 ResultByte = _UdpClient.Receive(ref _IPEndPoint);
@@ -129,6 +145,7 @@ namespace STGLinkUDP
             }
             catch (Exception)
             {
+                Console.WriteLine("MachConnectCmdPacket send error");
                 Connected = false;
             }
 
@@ -145,26 +162,20 @@ namespace STGLinkUDP
                 MachConnectEchoPacketStruct MachConnectEchoPack = new MachConnectEchoPacketStruct();
                 MachConnectEchoPack = (MachConnectEchoPacketStruct)BytesToStruct(DataByte, MachConnectEchoPack.GetType());
 
-
-                PacketSeting();
                 MachDataCmdPack.ID0 = Convert.ToByte(MachConnectEchoPack.MachID);
                 MachDataCmdPack.Cmd = _Cmd;
                 MachDataCmdPack.Code = _Code;
 
                 byte[] sendBytes = StructToBytes(MachDataCmdPack);
 
-
-
                 _UdpClient.Send(sendBytes, sendBytes.Length, _IPEndPoint);
                 ResultByte = _UdpClient.Receive(ref _IPEndPoint);
-
-
 
             }
             catch (Exception)
             {
+                Console.WriteLine("MachDataCmdPacket send error");
                 Connected = false;
-
             }
         }
 

@@ -35,7 +35,6 @@ namespace UDPConsoleServer
                 UDPConsoleServer.MachIDPacketServer();
                 UDPConsoleServer.MachConnectPacketServer();
                 UDPConsoleServer.MachDataPacketServer();
-
             } while (true);
 
 

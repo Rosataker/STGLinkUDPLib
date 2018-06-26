@@ -11,15 +11,15 @@ namespace ConsoleApp
     {        
 
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) { 
+        
             IDictionary<string, string> configDic = new Dictionary<string, string>();
-            configDic["_IP"] = "127.0.0.1";
-            configDic["_PORT"] = 0x869C.ToString();
-            configDic["_Code"] = 0x7A1.ToString(); //.4.a MachDataCmdPacket
-            configDic["_Cmd"] = 0x01.ToString(); //.4.a MachDataCmdPacket
-            configDic["_Timeout_ms"] = "1500";
-            configDic["_Retry_count"] = "5";
+            configDic["_IP"] = ConfigurationManager.AppSettings["_IP"];
+            configDic["_PORT"] = Convert.ToInt32(ConfigurationManager.AppSettings["_PORT"], 16).ToString();
+            configDic["_Code"] = Convert.ToInt32(ConfigurationManager.AppSettings["_Code"], 16).ToString(); //.4.a MachDataCmdPacket
+            configDic["_Cmd"] = Convert.ToInt32(ConfigurationManager.AppSettings["_Cmd"], 16).ToString(); //.4.a MachDataCmdPacket
+            configDic["_TIMEOUT_MS"] = "1500";
+            configDic["_RETRY_COUNT"] = "5";
             STGLinkUDPLib STGLinkUDPLib = new STGLinkUDPLib(configDic);
             STGLinkUDPLib.RunClient();
 

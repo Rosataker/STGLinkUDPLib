@@ -13,16 +13,16 @@ namespace STUDPBase
 {
     public class STUDPBaseLib : ISTUDPInterface
     {
-        public static UdpClient _UdpClient;
-        public static IPEndPoint _IPEndPoint;
-        public static string _IP { get; private set; }
-        public static int _PORT { get; private set; }
-        public static int _Code { get; private set; }
-        public static byte _Cmd { get; private set; }
-        public static int _Timeout_ms { get; private set; }
-        public static int _Retry_count { get; private set; }
-        public static bool _configDicSetError { get; private set; }
-
+        public UdpClient _UdpClient;
+        public IPEndPoint _IPEndPoint;
+        public string _IP { get; private set; }
+        public int _PORT { get; private set; }
+        public int _Code { get; private set; }
+        public byte _Cmd { get; private set; }
+        public int _TIMEOUT_MS { get; private set; }
+        public int _RETRY_COUNT { get; private set; }
+        public bool _configDicSetError { get; private set; }
+        
         public STUDPBaseLib(IDictionary<string, string> configDic)
         {
             _configDicSetError = true;
@@ -30,8 +30,8 @@ namespace STUDPBase
             if (!configDic.ContainsKey("_PORT")) _configDicSetError = false;
             if (!configDic.ContainsKey("_Code")) _configDicSetError = false;
             if (!configDic.ContainsKey("_Cmd")) _configDicSetError = false;
-            if (!configDic.ContainsKey("_Timeout_ms")) _configDicSetError = false;
-            if (!configDic.ContainsKey("_Retry_count")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_TIMEOUT_MS")) _configDicSetError = false;
+            if (!configDic.ContainsKey("_RETRY_COUNT")) _configDicSetError = false;
 
             if (!_configDicSetError)
             {
@@ -44,8 +44,8 @@ namespace STUDPBase
             _PORT = int.Parse(configDic["_PORT"]);
             _Code = int.Parse(configDic["_Code"]);
             _Cmd = byte.Parse(configDic["_Cmd"]);
-            _Timeout_ms = int.Parse(configDic["_Timeout_ms"]);
-            _Retry_count = int.Parse(configDic["_Retry_count"]);
+            _TIMEOUT_MS = int.Parse(configDic["_TIMEOUT_MS"]);
+            _RETRY_COUNT = int.Parse(configDic["_RETRY_COUNT"]);
         }
 
         public bool Connected { get; set; }

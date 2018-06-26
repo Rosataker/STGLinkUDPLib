@@ -9,9 +9,7 @@ namespace ISTUDP
         bool Connected { get; }
         void Open();
         void Destructor();
+
+
     }
-
-
-
-
 }
