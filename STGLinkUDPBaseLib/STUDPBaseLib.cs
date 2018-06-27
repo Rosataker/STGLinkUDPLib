@@ -48,6 +48,7 @@ namespace STUDPBase
             _RETRY_COUNT = int.Parse(configDic["_RETRY_COUNT"]);
         }
 
+
         public bool Connected { get; set; }
 
         public void Open()
@@ -57,15 +58,15 @@ namespace STUDPBase
             _UdpClient = new UdpClient();
         }
 
+
+
+
+
+
         public void Destructor()
         {
             Connected = false;
             _UdpClient.Close();
         }
-
-
-
     }
-
-
 }

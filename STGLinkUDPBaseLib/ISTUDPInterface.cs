@@ -10,6 +10,5 @@ namespace ISTUDP
         void Open();
         void Destructor();
 
-
     }
 }
